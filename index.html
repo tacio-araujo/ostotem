@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>InfinityCorp - Totem Experiência</title>
     
-    <!-- Link para o Manifesto do Aplicativo (Força o Modo Standalone / Tela Cheia) -->
+    <!-- Link para o Manifesto do Aplicativo -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b111e">
     <meta name="mobile-web-app-capable" content="yes">
@@ -481,7 +481,7 @@
         <i class="fa-solid fa-gear text-xl"></i>
     </button>
 
-    <!-- MODAL DE AUTENTICAÇÃO DO PIN (Discreto, Dark e Elegante) -->
+    <!-- MODAL DE AUTENTICAÇÃO DO PIN -->
     <div id="admin-auth-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden px-6">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-xs shadow-2xl text-center space-y-4">
             <div class="h-12 w-12 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full flex items-center justify-center text-xl mx-auto">
@@ -514,6 +514,12 @@
             <span>PAINEL ADMIN</span>
             <span class="text-[9px] text-[#0096d6] font-mono">v1.4.secured</span>
         </div>
+
+        <!-- NOVIDADE: OPÇÃO 0: Alternar Modo Tela Cheia (Firefox Kiosk) -->
+        <button onclick="alternarTelaCheia(); fecharAdminMenu();" 
+                class="flex items-center gap-3 w-full px-3 py-2.5 bg-[#0096d6]/10 text-[#0096d6] hover:bg-[#0096d6]/20 rounded-xl text-left text-xs font-bold tracking-wide transition-all cursor-pointer">
+            <i class="fa-solid fa-expand text-sm"></i> Ativar Tela Cheia
+        </button>
         
         <!-- OPÇÃO 1: Sincronização e Carga Manual -->
         <button onclick="iniciarSincronizacaoManual(); fecharAdminMenu();" 
@@ -544,17 +550,8 @@
     <!-- SCRIPTS DE CONTROLE E INTEGRAÇÃO DE CONEXÃO E LEITURA -->
     <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxo82LvC5Wkt7zbHCqv8m9oE4ipzoG9_x3Mt75l9gdpL4yVfbpwWju7nfw6aic6q1BB0Q/exec"; 
-
-        // Registra o Service Worker para forçar o Chrome a liberar o modo Instalação (Tela Cheia)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js')
-            .then(reg => console.log('Service Worker registrado com sucesso!', reg))
-            .catch(err => console.warn('Erro ao registrar Service Worker:', err));
-    }
-
-    // =========================================================================
-    // CONFIGURAÇÃO CRÍTICA DO PIN DO ADMINISTRADOR (Modifique o valor abaixo)
-    // =========================================================================
+    
+    // PIN do administrador para controle técnico local
     const PIN_ADMINISTRADOR = "1234"; 
 
     let countdownInterval;
@@ -562,9 +559,9 @@
     let checkinConcluidoComSucesso = false; 
 
     // CONFIGURAÇÕES DO CRON DE SINCRONIZAÇÃO AUTOMÁTICA
-    const INTERVALO_SYNC_UP = 20000;    // 20 segundos para tentar subir os registros offline para o Sheets
-    const INTERVALO_SYNC_DOWN = 300000; // 5 minutos para puxar atualizações do Sheets para a memória do totem
-    let isSyncing = false;               // Semáforo para evitar concorrência nas requisições assíncronas
+    const INTERVALO_SYNC_UP = 20000;    
+    const INTERVALO_SYNC_DOWN = 300000; 
+    let isSyncing = false;               
 
     // Inicialização das tabelas de armazenamento local
     if (!localStorage.getItem('offline_checkins')) localStorage.setItem('offline_checkins', JSON.stringify([]));
@@ -576,6 +573,31 @@
 
     // Dados temporários da impressão
     let dadosEtiquetaAtual = { nome: '', empresa: '', cargo: '' };
+
+
+    /* ========================================================
+       MÓDULO: CONTROLE DE TELA CHEIA (FORÇA NO FIREFOX)
+       ======================================================== */
+    function alternarTelaCheia() {
+        const doc = document.documentElement;
+        if (!document.fullscreenElement && !document.mozFullScreenElement && !document.webkitFullscreenElement) {
+            if (doc.requestFullscreen) {
+                doc.requestFullscreen();
+            } else if (doc.mozRequestFullScreen) { /* Firefox */
+                doc.mozRequestFullScreen();
+            } else if (doc.webkitRequestFullscreen) {
+                doc.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { /* Firefox */
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    }
 
 
     /* ========================================================
@@ -604,7 +626,7 @@
         if (input && panel) {
             if (input.value === PIN_ADMINISTRADOR) {
                 fecharAdminAuthModal();
-                panel.classList.remove('hidden'); // Libera o acesso ao painel técnico
+                panel.classList.remove('hidden'); 
             } else {
                 alert("PIN Inválido! Acesso negado.");
                 input.value = "";
@@ -613,7 +635,6 @@
         }
     }
 
-    // Permitir submissão do PIN ao teclar "Enter" no input
     const pinInputEl = document.getElementById('admin-pin-input');
     if (pinInputEl) {
         pinInputEl.addEventListener('keydown', function(e) {
@@ -630,14 +651,12 @@
         }
     }
 
-    // Fechar o menu de administrador ou o modal de PIN se o técnico clicar em qualquer outra parte cinza da tela
     document.addEventListener('click', function(event) {
         const panel = document.getElementById('admin-menu-panel');
         const modal = document.getElementById('admin-auth-modal');
         const gearBtn = document.getElementById('admin-gear-btn');
         
         if (panel && modal && gearBtn) {
-            // Se o clique foi fora do painel de controle e fora do botão de engrenagem, tranca
             if (!panel.contains(event.target) && !gearBtn.contains(event.target) && !modal.contains(event.target)) {
                 panel.classList.add('hidden');
                 modal.classList.add('hidden');
@@ -697,7 +716,7 @@
         }
     }, true); 
 
-    function ejecutarAcaoScanner(conteudoLido) {
+    function executarAcaoScanner(conteudoLido) {
         if (document.activeElement && document.activeElement.tagName === 'INPUT') {
             document.activeElement.value = "";
             document.activeElement.blur(); 
@@ -858,10 +877,9 @@
             aspectRatio: 1.0 
         };
 
-        // PASSO 1: Mapeia todas as câmeras físicas disponíveis no Android
+        // PASSO 1: Mapeia todas as câmeras físicas no Android do totem
         Html5Qrcode.getCameras().then(devices => {
             if (devices && devices.length > 0) {
-                // Seleciona a primeira câmera disponível (comportamento ideal para webcams USB embutidas)
                 const cameraId = devices[0].id; 
                 
                 html5QrCode.start(
@@ -873,20 +891,19 @@
                     statusDiv.className = "text-xs font-semibold text-emerald-400";
                     statusDiv.innerText = "Câmera ativa! Aponte o QR Code.";
                 }).catch(err => {
-                    console.warn("Erro ao iniciar câmera via ID físico, tentando fallback de driver...");
+                    console.warn("Erro ao iniciar via ID físico, tentando fallback genérico...");
                     tentarFallbackCameraGenerica(config, statusDiv);
                 });
             } else {
                 tentarFallbackCameraGenerica(config, statusDiv);
             }
         }).catch(err => {
-            console.warn("Não listou dispositivos de vídeo, forçando inicialização direta...");
+            console.warn("Não listou dispositivos de vídeo, forçando inicialização...");
             tentarFallbackCameraGenerica(config, statusDiv);
         });
     }
 
     function tentarFallbackCameraGenerica(config, statusDiv) {
-        // Tenta abrir sem especificar ID restrito de hardware (para drivers antigos de Android)
         html5QrCode.start(
             { facingMode: "environment" }, 
             config,
@@ -980,7 +997,6 @@
         const termoLimpo = termo.replace(/\D/g, '').trim();
         const tLower = termo.toLowerCase().trim();
 
-        // Camada 1: Cache dinâmico (Auto-Pull do Sheets)
         const cacheStr = localStorage.getItem('PARTICIPANTES_CACHE');
         if (cacheStr) {
             const cache = JSON.parse(cacheStr);
@@ -992,7 +1008,6 @@
             if (localizado) return localizado;
         }
 
-        // Camada 2: Arquivo estático fallback (database.js)
         try {
             if (typeof PARTICIPANTES_LOCAL !== 'undefined') {
                 const localizadoLocal = PARTICIPANTES_LOCAL.find(p => {
@@ -1024,7 +1039,6 @@
         isSyncing = true;
         console.log(`[Auto-Push] Sincronizando dados pendentes...`);
 
-        // AÇÃO 1: Prioridade Máxima para Novos Cadastros realizados offline
         if (cadastrosOffline.length > 0) {
             const cadastro = cadastrosOffline[0];
             const callbackNome = "jsonp_push_cad_" + Math.round(100000 * Math.random());
@@ -1052,7 +1066,6 @@
             return;
         }
 
-        // AÇÃO 2: Envia os bipes de presença offline
         if (checkinsOffline.length > 0) {
             const checkin = checkinsOffline[0];
             const callbackNome = "jsonp_push_chk_" + Math.round(100000 * Math.random());
@@ -1091,7 +1104,6 @@
 
         if (timeoutDeSeguranca) clearTimeout(timeoutDeSeguranca);
 
-        // 1. TENTA ENCONTRAR NA CASCATA LOCAL PRIMEIRO (LATÊNCIA ZERO)
         const participante = buscarParticipanteNaCascata(termo);
         if (participante) {
             checkinConcluidoComSucesso = true;
@@ -1100,7 +1112,6 @@
             return;
         }
 
-        // 2. CASO NÃO ACHE LOCALMENTE E ESTEJA OFFLINE, REDIRECIONA PARA CADASTRO
         if (!navigator.onLine) {
             console.warn("Dispositivo offline e participante não encontrado localmente.");
             atualizarStatusOverlay(
@@ -1118,7 +1129,6 @@
             return;
         }
 
-        // 3. SE NÃO ACHOU LOCALMENTE MAS ESTÁ ONLINE, FAZ BUSCA REALTIME
         atualizarStatusOverlay(
             "Conectando", 
             "Buscando novos registros na nuvem...", 
@@ -1558,11 +1568,12 @@
         ajustarBotaoFinalSync("Sincronização Concluída!");
     }
 
+    // CORRIGIDO: Agora usa o parâmetro correto 'mensagem' em vez do inexistente 'message'
     function ajustarBotaoFinalSync(mensagem) {
         const btnFechar = document.getElementById('btn-fechar-sync');
         if (btnFechar) {
             btnFechar.disabled = false;
-            btnFechar.innerText = message;
+            btnFechar.innerText = mensagem; 
             btnFechar.className = "w-full bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-xl text-sm font-extrabold transition-all cursor-pointer shadow-lg";
         }
     }
