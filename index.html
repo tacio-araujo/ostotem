@@ -544,7 +544,14 @@
     <!-- SCRIPTS DE CONTROLE E INTEGRAÇÃO DE CONEXÃO E LEITURA -->
     <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxo82LvC5Wkt7zbHCqv8m9oE4ipzoG9_x3Mt75l9gdpL4yVfbpwWju7nfw6aic6q1BB0Q/exec"; 
-    
+
+        // Registra o Service Worker para forçar o Chrome a liberar o modo Instalação (Tela Cheia)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('Service Worker registrado com sucesso!', reg))
+            .catch(err => console.warn('Erro ao registrar Service Worker:', err));
+    }
+
     // =========================================================================
     // CONFIGURAÇÃO CRÍTICA DO PIN DO ADMINISTRADOR (Modifique o valor abaixo)
     // =========================================================================
